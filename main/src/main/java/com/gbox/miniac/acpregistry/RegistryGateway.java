@@ -163,6 +163,7 @@ public class RegistryGateway extends Gateway {
 	 *            DataGateway}.
 	 * @param dataItemId
 	 *            the identifier of data item within the gateway.
+	 * @return the register data item added to the application.
 	 */
 	public RegisterDataItem<?> addRegisterToApplication(String registerName, String gatewayId, String dataItemId) {
 		synchronized (getLock()) {
