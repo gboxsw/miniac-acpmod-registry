@@ -193,6 +193,63 @@ public class RegistryGateway extends Gateway {
 		}
 	}
 
+	/**
+	 * Adds a register based data item to the application to which the gateway
+	 * is attached. The added data item is bound to register with given name.
+	 * Each register can be bound only to one data item. If more data items
+	 * bound to the same register are required, use {@link AliasDataItem}.
+	 * 
+	 * @param registerName
+	 *            the name of register.
+	 * @param gatewayId
+	 *            the identifier of a gateway which will manage the data item.
+	 *            The gateway must be instance of the class {@link DataGateway
+	 *            DataGateway}.
+	 * @param dataItemId
+	 *            the identifier of data item within the gateway.
+	 * @param type
+	 *            the type of value.
+	 * @return the register data item added to the application.
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> RegisterDataItem<T> addRegisterToApplication(String registerName, String gatewayId, String dataItemId,
+			Class<T> type) {
+		if (type == null) {
+			throw new NullPointerException("Type of data item cannot be null.");
+		}
+
+		synchronized (getLock()) {
+			if (!isAttachedToApplication()) {
+				throw new IllegalStateException("The gateway is not attached to application.");
+			}
+
+			if (isRunning()) {
+				throw new IllegalStateException("It is not possible to add data item to launched application.");
+			}
+
+			Register register = registersByName.get(registerName);
+			if (register == null) {
+				throw new IllegalArgumentException("Register with name \"" + registerName + "\" does not exist.");
+			}
+
+			if (activeRegisters.contains(register)) {
+				throw new IllegalStateException(
+						"Register with name \"" + registerName + "\" is already added to application.");
+			}
+
+			RegisterDataItem<?> registerDataItem = new RegisterDataItem<>(register, register.getType());
+			getApplication().addDataItem(gatewayId, dataItemId, registerDataItem);
+			activeRegisters.add(register);
+
+			if (!register.getType().equals(type)) {
+				throw new IllegalArgumentException("Type of register \"" + registerName + "\" is "
+						+ register.getType().getName() + " and it does not match required type " + type.getName());
+			}
+
+			return (RegisterDataItem<T>) registerDataItem;
+		}
+	}
+
 	@Override
 	protected void onStart(Map<String, Bundle> bundles) {
 		if (activeRegisters.isEmpty()) {
