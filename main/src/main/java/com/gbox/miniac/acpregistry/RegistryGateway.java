@@ -19,6 +19,31 @@ import com.gboxsw.miniac.dataitems.AliasDataItem;
 public class RegistryGateway extends Gateway {
 
 	/**
+	 * Extended record about an active register collection.
+	 */
+	private static class ActiveCollection {
+		/**
+		 * Register collection.
+		 */
+		final RegisterCollection collection;
+
+		/**
+		 * Latest statistical data of the collection.
+		 */
+		RequestStatistics latestStatistics;
+
+		/**
+		 * Constructs record of an active collection.
+		 * 
+		 * @param collection
+		 *            the collection.
+		 */
+		ActiveCollection(RegisterCollection collection) {
+			this.collection = collection;
+		}
+	}
+
+	/**
 	 * Default interval in seconds between two updates of statistical data.
 	 */
 	private static final int DEFAULT_STATISTICS_UPDATE_INTERVAL = 5;
@@ -26,7 +51,12 @@ public class RegistryGateway extends Gateway {
 	/**
 	 * Updater of registers (singleton).
 	 */
-	private static final AutoUpdater registryUpdater = new AutoUpdater();
+	private static final AutoUpdater commonRegistryUpdater = new AutoUpdater();
+
+	/**
+	 * Updater of registers.
+	 */
+	private final AutoUpdater registryUpdater;
 
 	/**
 	 * Registry gateway wrapped by this miniac gateway.
@@ -39,9 +69,9 @@ public class RegistryGateway extends Gateway {
 	private final Set<Register> activeRegisters = new HashSet<>();
 
 	/**
-	 * Set of active register collections.
+	 * Map of active collection.
 	 */
-	private final Map<String, RegisterCollection> activeCollections = new HashMap<>();
+	private final Map<String, ActiveCollection> activeCollections = new HashMap<>();
 
 	/**
 	 * Update interval in seconds between two updates of statistics.
@@ -80,7 +110,8 @@ public class RegistryGateway extends Gateway {
 	}
 
 	/**
-	 * Constructs gateway from configuration in an xml file.
+	 * Constructs gateway from configuration in an xml file and with common
+	 * registry updater.
 	 * 
 	 * @param xmlFile
 	 *            the xml file with configuration of gateway.
@@ -88,6 +119,22 @@ public class RegistryGateway extends Gateway {
 	 *            the configured loader used to load the xml file.
 	 */
 	public RegistryGateway(File xmlFile, XmlLoader xmlLoader) {
+		this(xmlFile, xmlLoader, null);
+	}
+
+	/**
+	 * Constructs gateway from configuration in an xml file.
+	 * 
+	 * @param xmlFile
+	 *            the xml file with configuration of gateway.
+	 * @param xmlLoader
+	 *            the configured loader used to load the xml file.
+	 * @param registryUpdater
+	 *            the automatic updater of registers. If set to null, a registry
+	 *            updater which is common for all gateways is used.
+	 */
+	public RegistryGateway(File xmlFile, XmlLoader xmlLoader, AutoUpdater registryUpdater) {
+		this.registryUpdater = (registryUpdater == null) ? commonRegistryUpdater : registryUpdater;
 		ArrayList<Register> registers = new ArrayList<>();
 
 		gateway = xmlLoader.loadGatewayFromXml(xmlFile, collections, registers);
@@ -265,7 +312,7 @@ public class RegistryGateway extends Gateway {
 		// create map with named register collections
 		for (Map.Entry<String, RegisterCollectionConfig> entry : collections.entrySet()) {
 			if (usedCollections.contains(entry.getValue().registerCollection)) {
-				activeCollections.put(entry.getKey(), entry.getValue().registerCollection);
+				activeCollections.put(entry.getKey(), new ActiveCollection(entry.getValue().registerCollection));
 			}
 		}
 
@@ -366,12 +413,31 @@ public class RegistryGateway extends Gateway {
 	 * Publishes messages with statistical data.
 	 */
 	private void publishStatisticalData() {
-		for (Map.Entry<String, RegisterCollection> entry : activeCollections.entrySet()) {
+		for (Map.Entry<String, ActiveCollection> entry : activeCollections.entrySet()) {
 			String collectionName = entry.getKey();
-			RequestStatistics statistics = entry.getValue().getStatistics().createSnapshot();
+			ActiveCollection activeCollection = entry.getValue();
+
+			RequestStatistics statistics = activeCollection.collection.getStatistics().createSnapshot();
 			handleReceivedMessage(new Message(collectionName + "/total", Long.toString(statistics.getTotalRequests())));
 			handleReceivedMessage(
 					new Message(collectionName + "/failed", Long.toString(statistics.getFailedRequests())));
+
+			// compute current quality of communication link
+			int quality = 100;
+			if (activeCollection.latestStatistics != null) {
+				long messagesInPeriod = statistics.getTotalRequests()
+						- activeCollection.latestStatistics.getTotalRequests();
+				long failsInPeriod = statistics.getFailedRequests()
+						- activeCollection.latestStatistics.getFailedRequests();
+			
+				if (messagesInPeriod > 0) {
+					quality = (int) Math
+							.round((Math.max(messagesInPeriod - failsInPeriod, 0) / (double) messagesInPeriod) * 100);
+				}
+			}
+			handleReceivedMessage(new Message(collectionName + "/quality", Integer.toString(quality)));
+
+			activeCollection.latestStatistics = statistics;
 		}
 	}
 }
