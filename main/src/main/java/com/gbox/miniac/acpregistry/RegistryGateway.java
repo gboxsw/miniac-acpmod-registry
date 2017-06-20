@@ -343,7 +343,7 @@ public class RegistryGateway extends Gateway {
 					statisticsUpdateInterval, TimeUnit.SECONDS);
 			statisticsUpdateSubscription = app.subscribe(updateMailbox, new MessageListener() {
 				@Override
-				public void messageReceived(Message message) {
+				public void onMessage(Message message) {
 					publishStatisticalData();
 				}
 			});
