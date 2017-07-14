@@ -323,8 +323,9 @@ public class RegistryGateway extends Gateway {
 		for (Map.Entry<String, RegisterCollectionConfig> entry : collections.entrySet()) {
 			RegisterCollectionConfig config = entry.getValue();
 			if (usedCollections.contains(config.registerCollection)) {
-				registryUpdater.useRegistryHints(config.registerCollection, config.hintIntervalInMillis,
-						config.timeoutInMillis);
+				if (config.hintSettings != null) {
+					registryUpdater.useRegistryHints(config.registerCollection, config.hintSettings);
+				}
 			}
 		}
 
@@ -429,7 +430,7 @@ public class RegistryGateway extends Gateway {
 						- activeCollection.latestStatistics.getTotalRequests();
 				long failsInPeriod = statistics.getFailedRequests()
 						- activeCollection.latestStatistics.getFailedRequests();
-			
+
 				if (messagesInPeriod > 0) {
 					quality = (int) Math
 							.round((Math.max(messagesInPeriod - failsInPeriod, 0) / (double) messagesInPeriod) * 100);
