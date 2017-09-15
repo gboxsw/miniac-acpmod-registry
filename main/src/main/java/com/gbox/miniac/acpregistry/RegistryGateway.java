@@ -255,6 +255,8 @@ public class RegistryGateway extends Gateway {
 	 * @param dataItemId
 	 *            the identifier of data item within the gateway.
 	 * @param type
+	 *            the class of value type.
+	 * @param <T>
 	 *            the type of value.
 	 * @return the register data item added to the application.
 	 */
