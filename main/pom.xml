@@ -3,17 +3,17 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.gboxsw.miniac</groupId>
-	<artifactId>acpregistry</artifactId>
+	<artifactId>acpregistry-gateway</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
 
 	<name>acpregistry</name>
-	<url>https://github.com/gboxsw/miniac-acpregistry</url>
-	<description>Connector to ACP module Registry.</description>
+	<url>https://github.com/gboxsw/miniac-acpregistry-gateway</url>
+	<description>Gateway for miniac acpregistry library.</description>
 
 	<issueManagement>
 		<system>github</system>
-		<url>https://github.com/gboxsw/miniac-acpregistry/issues</url>
+		<url>https://github.com/gboxsw/miniac-acpregistry-gateway/issues</url>
 	</issueManagement>
 
 	<licenses>
@@ -33,9 +33,9 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:git@github.com:gboxsw/miniac-acpregistry.git</connection>
-		<developerConnection>scm:git:git@github.com:gboxsw/miniac-acpregistry.git</developerConnection>
-		<url>git@github.com:gboxsw/miniac-acpregistry.git</url>
+		<connection>scm:git:git@github.com:gboxsw/miniac-acpregistry-gateway.git</connection>
+		<developerConnection>scm:git:git@github.com:gboxsw/miniac-acpregistry-gateway.git</developerConnection>
+		<url>git@github.com:gboxsw/miniac-acpregistry-gateway.git</url>
 	</scm>
 
 	<properties>

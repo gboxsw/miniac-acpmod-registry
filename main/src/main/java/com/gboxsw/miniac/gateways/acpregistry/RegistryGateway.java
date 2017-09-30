@@ -1,4 +1,4 @@
-package com.gbox.miniac.acpregistry;
+package com.gboxsw.miniac.gateways.acpregistry;
 
 import java.io.File;
 import java.util.*;

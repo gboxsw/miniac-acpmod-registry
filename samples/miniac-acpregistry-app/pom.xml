@@ -18,7 +18,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.gboxsw.miniac</groupId>
-			<artifactId>acpregistry</artifactId>
+			<artifactId>acpregistry-gateway</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 	</dependencies>

@@ -3,9 +3,9 @@ package com.gboxsw.miniac.samples.miniac_acpregistry_app;
 import java.io.File;
 import java.util.Scanner;
 
-import com.gbox.miniac.acpregistry.RegistryGateway;
 import com.gboxsw.miniac.Application;
 import com.gboxsw.miniac.Message;
+import com.gboxsw.miniac.gateways.acpregistry.RegistryGateway;
 
 /**
  * Simple miniac-based application.
