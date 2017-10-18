@@ -19,6 +19,11 @@ import com.gboxsw.miniac.dataitems.AliasDataItem;
 public class RegistryGateway extends Gateway {
 
 	/**
+	 * Default (pre-defined) name of the gateway.
+	 */
+	public static final String DEFAULT_ID = "acpreg";
+	
+	/**
 	 * Extended record about an active register collection.
 	 */
 	private static class ActiveCollection {
