@@ -22,7 +22,7 @@ public class RegistryGateway extends Gateway {
 	 * Default (pre-defined) name of the gateway.
 	 */
 	public static final String DEFAULT_ID = "acpreg";
-	
+
 	/**
 	 * Extended record about an active register collection.
 	 */
@@ -87,11 +87,6 @@ public class RegistryGateway extends Gateway {
 	 * Cancellable publisher of statistical data.
 	 */
 	private Cancellable statisticsUpdateGenerator;
-
-	/**
-	 * Subscription to mailbox for handling requests to update statistical data.
-	 */
-	private Subscription statisticsUpdateSubscription;
 
 	/**
 	 * Register collections accessible by the gateway.
@@ -345,16 +340,12 @@ public class RegistryGateway extends Gateway {
 
 		// prepare publication of statistical data (if enabled)
 		if (statisticsUpdateInterval > 0) {
-			Application app = getApplication();
-			String updateMailbox = app.createMailboxTopic();
-			statisticsUpdateGenerator = app.publishWithFixedDelay(new Message(updateMailbox), 0,
-					statisticsUpdateInterval, TimeUnit.SECONDS);
-			statisticsUpdateSubscription = app.subscribe(updateMailbox, new MessageListener() {
+			statisticsUpdateGenerator = getApplication().invokeWithFixedDelay(new Runnable() {
 				@Override
-				public void onMessage(Message message) {
+				public void run() {
 					publishStatisticalData();
 				}
-			});
+			}, 0, statisticsUpdateInterval, TimeUnit.SECONDS);
 		}
 	}
 
@@ -403,11 +394,6 @@ public class RegistryGateway extends Gateway {
 		if (statisticsUpdateGenerator != null) {
 			statisticsUpdateGenerator.cancel();
 			statisticsUpdateGenerator = null;
-		}
-
-		if (statisticsUpdateSubscription != null) {
-			statisticsUpdateSubscription.close();
-			statisticsUpdateSubscription = null;
 		}
 	}
 
